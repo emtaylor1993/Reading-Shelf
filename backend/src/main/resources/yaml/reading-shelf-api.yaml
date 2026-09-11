@@ -1,0 +1,93 @@
+openapi: 3.0.3
+
+info:
+  title: Reading Shelf API
+  description: The Reading Shelf API is a RESTful API that is used for tracking books and learning specification-first development.
+  version: 0.1.0
+
+servers:
+  - url: http://localhost:8080
+    description: Local development server.
+
+tags:
+  - name: Books
+    description: Manage books on your reading shelf.
+
+paths:
+  /api/books:
+    post:
+      tags:
+        - Books
+      operationId: createBook
+      summary: Add a book to the reading shelf.
+      description: Creates a book and assigns it a unique identifier.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateBookRequest'
+      responses:
+        '201':
+          description: Book created successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+
+components:
+  schemas:
+    ReadingStatus:
+      type: string
+      description: The reader's progress through a book.
+      enum:
+        - TO_READ
+        - READING
+        - FINISHED
+      example: TO_READ
+    CreateBookRequest:
+      type: object
+      description: Information needed to add a book.
+      required:
+        - title
+        - author
+        - status
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          example: Green Eggs and Ham
+        author:
+          type: string
+          minLength: 1
+          maxLength: 120
+          example: Dr. Seuss
+        status:
+          $ref: '#/components/schemas/ReadingStatus'
+    Book:
+      type: object
+      description: A book stored on the reading shelf.
+      required:
+        - id
+        - title
+        - author
+        - status
+      properties:
+        id:
+          type: integer
+          format: int64
+          minimum: 1
+          example: 1
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          example: Green Eggs and Ham
+        author:
+          type: string
+          minLength: 1
+          maxLength: 120
+          example: Dr. Seuss
+        status:
+          $ref: '#/components/schemas/ReadingStatus'
