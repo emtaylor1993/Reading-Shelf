@@ -34,6 +34,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Book'
+        '400':
+          description: The request body is malformed or contains invalid book data.
 
 components:
   schemas:
