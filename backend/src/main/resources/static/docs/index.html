@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Reading Shelf — API Documentation</title>
+        <style>
+            * {
+                box-sizing: border-box;
+            }
+
+            body {
+                margin: 0;
+                height: 100vh;
+                height: 100dvh;
+                display: flex;
+                flex-direction: column;
+                font-family: system-ui, sans-serif;
+                color: #26332d;
+                background: #f6f3ed;
+            }
+
+            header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 16px;
+                flex-wrap: wrap;
+                padding: 16px 24px;
+                border-bottom: 1px solid #dddcd5;
+            }
+
+            h1 {
+                margin: 0 0 4px;
+                font-size: 20px;
+            }
+
+            p {
+                margin: 0;
+                font-size: 14px;
+                color: #626b65;
+            }
+
+            .controls {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                flex-wrap: wrap;
+            }
+
+            button,
+            a {
+                font: inherit;
+                font-size: 14px;
+                font-weight: bold;
+            }
+
+            button {
+                padding: 9px 15px;
+                border: 1px solid #cbd2cb;
+                border-radius: 8px;
+                background: white;
+                color: #26332d;
+                cursor: pointer;
+            }
+
+            button[aria-pressed="true"] {
+                background: #245b45;
+                border-color: #245b45;
+                color: white;
+            }
+
+            button:focus-visible,
+            a:focus-visible {
+                outline: 3px solid #c18724;
+                outline-offset: 3px;
+            }
+
+            a {
+                margin-left: 8px;
+                color: #245b45;
+            }
+
+            iframe {
+                display: block;
+                flex: 1;
+                min-height: 0;
+                width: 100%;
+                border: 0;
+                background: white;
+            }
+
+            [hidden] {
+                display: none !important;
+            }
+
+            #yaml-source {
+                flex: 1;
+                min-height: 0;
+                margin: 0;
+                padding: 24px;
+                overflow: auto;
+                background: #17231d;
+                color: #e2eee5;
+                font-family: Consolas, monospace;
+                font-size: 14px;
+                line-height: 1.6;
+                tab-size: 2;
+            }
+
+            #yaml-source:focus-visible {
+                outline: 3px solid #c18724;
+                outline-offset: -3px;
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            <div>
+                <h1>Reading Shelf</h1>
+                <p>Explore the API and try requests.</p>
+            </div>
+
+            <div class="controls" role="group" aria-label="Documentation viewer">
+                <button type="button" data-viewer="scalar" aria-pressed="true">
+                    Scalar
+                </button>
+                <button type="button" data-viewer="swagger" aria-pressed="false">
+                    Swagger UI
+                </button>
+                <button type="button" data-viewer="yaml" aria-pressed="false">
+                    YAML
+                </button>
+                <a href="/reading-shelf-api.yaml" download>
+                    Download YAML
+                </a>
+            </div>
+        </header>
+
+        <iframe
+            id="documentation"
+            src="./scalar.html"
+            title="Reading Shelf API documentation — Scalar">
+        </iframe>
+
+        <pre id="yaml-source" tabindex="0" aria-label="OpenAPI YAML Specification" hidden></pre>
+
+        <script>
+            const frame = document.querySelector('#documentation');
+            const yamlSource = document.querySelector('#yaml-source');
+            const buttons = document.querySelectorAll('[data-viewer]');
+
+            const viewers = {
+                scalar: {
+                    url: './scalar.html',
+                    title: 'Reading Shelf API documentation — Scalar'
+                },
+                swagger: {
+                    url: './swagger.html',
+                    title: 'Reading Shelf API documentation — Swagger UI'
+                }
+            };
+
+            let activeViewer = 'scalar';
+            let loadedViewer = 'scalar';
+
+            async function loadYaml() {
+                yamlSource.textContent = 'Loading Specification...';
+
+                try {
+                    const response = await fetch('/reading-shelf-api.yaml', {
+                        cache: 'no-store'
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+
+                    yamlSource.textContent = await response.text();
+                } catch (error) {
+                    yamlSource.textContent = `Could not load the specification: ${error.message}`;
+                }
+            }
+
+            buttons.forEach((button) => {
+                button.addEventListener('click', () => {
+                    const selectedViewer = button.dataset.viewer;
+
+                    if (selectedViewer === activeViewer) {
+                        return;
+                    }
+
+                    activeViewer = selectedViewer;
+
+                    buttons.forEach((item) => {
+                        item.setAttribute(
+                            'aria-pressed',
+                            String(item.dataset.viewer === selectedViewer)
+                        );
+                    });
+
+                    const showingYaml = selectedViewer === 'yaml';
+                    frame.hidden = showingYaml;
+                    yamlSource.hidden = !showingYaml;
+
+                    if (showingYaml) {
+                        loadYaml();
+                        return;
+                    }
+
+                    if (loadedViewer !== selectedViewer) {
+                        frame.src = viewers[selectedViewer].url;
+                        frame.title = viewers[selectedViewer].title;
+                        loadedViewer = selectedViewer;
+                    }
+                });
+            });
+        </script>
+    </body>
+</html>
