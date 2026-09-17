@@ -15,6 +15,35 @@ tags:
 
 paths:
   /api/books:
+    get:
+      tags:
+        - Books
+      operationId: listBooks
+      summary: List books on the reading shelf.
+      description: Returns all books ordered by ID from lowest to highest, optionally filtered by reading status.
+      parameters:
+        - name: status
+          in: query
+          description: Return only books with this reading status.
+          required: false
+          schema:
+            $ref: '#/components/schemas/ReadingStatus'
+      responses:
+        '200':
+          description: Books retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Book'
+              example:
+                - id: 1
+                  title: Green Eggs and Ham
+                  author: Dr. Seuss
+                  status: TO_READ
+        '400':
+          description: The status query parameter is invalid.
     post:
       tags:
         - Books
@@ -36,6 +65,90 @@ paths:
                 $ref: '#/components/schemas/Book'
         '400':
           description: The request body is malformed or contains invalid book data.
+  /api/books/{id}:
+    get:
+      tags:
+        - Books
+      operationId: getBookById
+      summary: Get a book by ID.
+      description: Returns the book with the specified identifier.
+      parameters:
+        - name: id
+          in: path
+          description: The unique identifier of the book.
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+          example: 1
+      responses:
+        '200':
+          description: Book retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        '400':
+          description: The book ID is invalid.
+        '404':
+          description: No book exists with the specified ID.
+    put:
+      tags:
+        - Books
+      operationId: updateBook
+      summary: Update an existing book.
+      description: Replaces all editable fields of an existing book while preserving its ID.
+      parameters:
+        - name: id
+          in: path
+          description: The unique identifier of the book.
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+          example: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateBookRequest'
+      responses:
+        '200':
+          description: Book updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Book'
+        '400':
+          description: The book ID or request body is invalid.
+        '404':
+          description: No book exists with the specified ID.
+    delete:
+      tags:
+        - Books
+      operationId: deleteBook
+      summary: Delete a book.
+      description: Removes the book with the specified identifier.
+      parameters:
+        - name: id
+          in: path
+          description: The unique identifier of the book.
+          required: true
+          schema:
+            type: integer
+            format: int64
+            minimum: 1
+          example: 1
+      responses:
+        '204':
+          description: Book deleted successfully.
+        '400':
+          description: The book ID is invalid.
+        '404':
+          description: No book exists with the specified ID.
 
 components:
   schemas:
@@ -81,6 +194,26 @@ components:
           format: int64
           minimum: 1
           example: 1
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          example: Green Eggs and Ham
+        author:
+          type: string
+          minLength: 1
+          maxLength: 120
+          example: Dr. Seuss
+        status:
+          $ref: '#/components/schemas/ReadingStatus'
+    UpdateBookRequest:
+      type: object
+      description: The complete set of editable fields for an existing book.
+      required:
+        - title
+        - author
+        - status
+      properties:
         title:
           type: string
           minLength: 1

@@ -54,6 +54,7 @@
 								<interfaceOnly>true</interfaceOnly>
 								<skipDefaultInterface>true</skipDefaultInterface>
 								<useTags>true</useTags>
+								<useSpringBuiltInValidation>true</useSpringBuiltInValidation>
 								<useBeanValidation>true</useBeanValidation>
 								<openApiNullable>false</openApiNullable>
 								<documentationProvider>none</documentationProvider>
